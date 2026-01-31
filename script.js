@@ -1,63 +1,172 @@
-// script.js
+// Confetti animation
+function createConfetti() {
+    const confettiContainer = document.getElementById('confettiContainer');
+    const colors = ['#ff6b9d', '#ffa8c5', '#ffeb3b', '#ff9800', '#667eea', '#764ba2', '#f093fb'];
 
-// Wait until the page and animations are done
-window.addEventListener('load', () => {
-    // Delay the confetti start until the cake/candle animations are finished
+    // Create confetti burst after cake is complete (4 layers + candle + pour times)
     setTimeout(() => {
-        startConfetti();
-    }, 5000); // Adjust delay if animations are longer
+        for (let i = 0; i < 100; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+                // Random shapes
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                } else {
+                    confetti.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                }
+
+                confettiContainer.appendChild(confetti);
+
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }, i * 30);
+        }
+    }, 10500); // Synced with new long pouring animation
+}
+
+// Continuous confetti throughout
+function continuousConfetti() {
+    const confettiContainer = document.getElementById('confettiContainer');
+    const colors = ['#ff6b9d', '#ffa8c5', '#ffeb3b', '#ff9800', '#667eea', '#764ba2', '#f093fb'];
+
+    // Start after main burst
+    setTimeout(() => {
+        setInterval(() => {
+            for (let i = 0; i < 3; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                }
+
+                confettiContainer.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }, 300);
+    }, 11500);
+}
+
+// Add sparkle effect to title
+function addSparkles() {
+    const title = document.getElementById('title');
+
+    setInterval(() => {
+        const sparkle = document.createElement('span');
+        sparkle.innerHTML = '✨';
+        sparkle.style.position = 'absolute';
+        sparkle.style.fontSize = '1.5rem';
+        sparkle.style.left = Math.random() * 100 + '%';
+        sparkle.style.top = Math.random() * 100 + '%';
+        sparkle.style.animation = 'sparkleFloat 2s ease-out forwards';
+        sparkle.style.pointerEvents = 'none';
+
+        title.style.position = 'relative';
+        title.appendChild(sparkle);
+
+        setTimeout(() => {
+            sparkle.remove();
+        }, 2000);
+    }, 800);
+}
+
+// Add sparkle animation to CSS dynamically
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes sparkleFloat {
+        0% {
+            opacity: 0;
+            transform: translateY(0) scale(0);
+        }
+        50% {
+            opacity: 1;
+            transform: translateY(-20px) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-40px) scale(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Initialize animations
+window.addEventListener('load', () => {
+    createConfetti();
+    continuousConfetti();
+
+    setTimeout(() => {
+        addSparkles();
+    }, 1000);
 });
 
-function startConfetti() {
-    const container = document.createElement('div');
-    container.id = 'confetti-container';
-    container.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        overflow: hidden;
-        z-index: 9999;
-    `;
-    document.body.appendChild(container);
+// Optional: Click to blow out candle
+const candle = document.getElementById('candle');
+const message = document.getElementById('message');
 
-    const colors = ['#f2d74e', '#95c3de', '#ff9a91', '#a4ffc4', '#ffffff'];
+candle.addEventListener('click', () => {
+    const flame = candle.querySelector('.flame');
+    flame.style.animation = 'blowOut 0.5s ease-out forwards';
 
-    // Create hundreds of confetti dots
-    for (let i = 0; i < 200; i++) {
-        const dot = document.createElement('div');
-        const size = Math.random() * 8 + 4;
-        const delay = Math.random() * 5; // stagger start
-        dot.style.cssText = `
-            position: absolute;
-            width: ${size}px;
-            height: ${size}px;
-            background: ${colors[Math.floor(Math.random() * colors.length)]};
-            top: -20px;
-            left: ${Math.random() * 100}vw;
-            border-radius: 50%;
-            opacity: ${Math.random()};
-            transform: translateY(0) rotate(${Math.random() * 360}deg);
-            animation: confettiFall ${Math.random() * 3 + 3}s linear ${delay}s infinite;
-        `;
-        container.appendChild(dot);
-    }
+    setTimeout(() => {
+        flame.style.opacity = '0';
+        message.textContent = 'Wish granted! 🎉';
 
-    // Add CSS for the fall animation dynamically
-    const style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes confettiFall {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(110vh) rotate(360deg);
-                opacity: 0;
-            }
+        // Extra confetti burst
+        const confettiContainer = document.getElementById('confettiContainer');
+        const colors = ['#ff6b9d', '#ffa8c5', '#ffeb3b', '#ff9800', '#667eea', '#764ba2', '#f093fb'];
+
+        for (let i = 0; i < 150; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                }
+
+                confettiContainer.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }, i * 10);
         }
-    `;
-    document.head.appendChild(style);
-}
+    }, 500);
+});
+
+// Add blow out animation
+const blowOutStyle = document.createElement('style');
+blowOutStyle.textContent = `
+    @keyframes blowOut {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.3) translateX(20px);
+        }
+        100% {
+            transform: scale(0) translateX(40px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(blowOutStyle);
