@@ -1,8 +1,4 @@
-🎂 HAPPY BIRTHDAY CODE PROJECT 🎂
-Created by: Irfan Dev Journey
-
-THANK YOU for downloading! 
-Here is how to use this code:
+ Here is how to use this code:
 
 1. HOW TO RUN:
    - Simply double-click "index.html" and it will open in your browser.
@@ -21,12 +17,4 @@ Here is how to use this code:
    - If you just send the file, it will look like a document icon.
    - To make it a real link (e.g., www.hername.com), use HOSTINGER.
 
-👉 GET 70% OFF HOSTING + FREE DOMAIN:
-
-https://hostinger.in?REFERRALCODE=I99ITISIRS9J
-
-Using a custom link is the best way to surprise her! ❤️
-------------------------------------------------
-Follow me on Instagram for more codes: @fromzero.dev
-Subscribe on YouTube: IrfanDevJourney
 ------------------------------------------------
