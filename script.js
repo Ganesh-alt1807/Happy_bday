@@ -170,3 +170,140 @@ blowOutStyle.textContent = `
     }
 `;
 document.head.appendChild(blowOutStyle);
+
+// --- Music Player ---
+class BirthdayMusic {
+    constructor() {
+        this.audioCtx = null;
+        this.isPlaying = false;
+        this.notes = {
+            "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13,
+            "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00,
+            "G#4": 415.30, "A4": 440.00, "A#4": 466.16, "B4": 493.88,
+            "C5": 523.25, "C#5": 554.37, "D5": 587.33, "D#5": 622.25,
+            "E5": 659.25, "F5": 698.46, "F#5": 739.99, "G5": 783.99
+        };
+
+        // Melody: Note, Duration (beats)
+        this.melody = [
+            { n: "G4", d: 1 }, { n: "G4", d: 1 }, { n: "A4", d: 2 }, { n: "G4", d: 2 }, { n: "C5", d: 2 }, { n: "B4", d: 4 },
+            { n: "G4", d: 1 }, { n: "G4", d: 1 }, { n: "A4", d: 2 }, { n: "G4", d: 2 }, { n: "D5", d: 2 }, { n: "C5", d: 4 },
+            { n: "G4", d: 1 }, { n: "G4", d: 1 }, { n: "G5", d: 2 }, { n: "E5", d: 2 }, { n: "C5", d: 2 }, { n: "B4", d: 2 }, { n: "A4", d: 2 },
+            { n: "F5", d: 1 }, { n: "F5", d: 1 }, { n: "E5", d: 2 }, { n: "C5", d: 2 }, { n: "D5", d: 2 }, { n: "C5", d: 4 }
+        ];
+
+        this.tempo = 250; // ms per beat unit
+        this.timeoutIds = [];
+    }
+
+    init() {
+        if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    playNote(freq, duration, startTime) {
+        if (!this.audioCtx) return;
+
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+
+        osc.type = 'triangle'; // Triangle wave sounds a bit like a chiptune/flute
+        osc.frequency.value = freq;
+
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+
+        // Envelope
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration - 0.05);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+    }
+
+    play() {
+        this.init();
+        if (this.audioCtx.state === 'suspended') {
+            this.audioCtx.resume();
+        }
+
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+
+        let currentTime = this.audioCtx.currentTime;
+
+        // Calculate total duration to loop
+        let totalDuration = 0;
+        this.melody.forEach(note => {
+            const duration = (note.d * this.tempo) / 1000;
+            if (note.n) {
+                this.playNote(this.notes[note.n], duration, currentTime);
+            }
+            currentTime += duration;
+            totalDuration += duration;
+        });
+
+        // Loop
+        this.timeoutIds.push(setTimeout(() => {
+            if (this.isPlaying) this.play();
+        }, totalDuration * 1000));
+    }
+
+    stop() {
+        this.isPlaying = false;
+
+        this.timeoutIds.forEach(id => clearTimeout(id));
+        this.timeoutIds = [];
+
+        if (this.audioCtx) {
+            this.audioCtx.suspend();
+        }
+    }
+}
+
+const musicPlayer = new BirthdayMusic();
+
+// Function to handle first user interaction
+function enableAudio() {
+    // Remove listeners immediately to prevent double-trigger
+    document.removeEventListener('click', enableAudio);
+    document.removeEventListener('touchstart', enableAudio);
+    document.removeEventListener('keydown', enableAudio);
+
+    // Initialize/Resume AudioContext
+    if (!musicPlayer.audioCtx) {
+        musicPlayer.init();
+    }
+
+    if (musicPlayer.audioCtx.state === 'suspended') {
+        musicPlayer.audioCtx.resume().then(() => {
+            if (!musicPlayer.isPlaying) musicPlayer.play();
+        });
+    } else {
+        if (!musicPlayer.isPlaying) musicPlayer.play();
+    }
+}
+
+// Add listeners for various user interactions
+document.addEventListener('click', enableAudio);
+document.addEventListener('touchstart', enableAudio);
+document.addEventListener('keydown', enableAudio);
+
+// Attempt to autoplay for browsers that allow it (rare, but possible)
+// We wrap this in a short timeout to ensure DOM is ready and doesn't block main thread
+setTimeout(() => {
+    try {
+        if (!musicPlayer.audioCtx) musicPlayer.init();
+        if (musicPlayer.audioCtx.state === 'running') {
+            musicPlayer.play();
+            // If successful, remove listeners
+            document.removeEventListener('click', enableAudio);
+            document.removeEventListener('touchstart', enableAudio);
+            document.removeEventListener('keydown', enableAudio);
+        }
+    } catch (e) {
+        // Autoplay failed, waiting for interaction
+    }
+}, 1000);
